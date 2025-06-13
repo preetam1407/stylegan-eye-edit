@@ -20,55 +20,56 @@
 
 ### 2.1 Latent Sampling & Label Computation
 
-1. **Sample** $z_i \sim \mathcal{N}(0, I)$, map through StyleGAN2 mapping network:  
-   $$w_i = G_{\mathrm{map}}(z_i)$$
+1. **Sample** $z_i \sim \mathcal{N}(0, I)$, map through StyleGAN2 mapping network:
 
-2. **Synthesize** image  
-   $$x_i = G_{\mathrm{synth}}(w_i)$$
+$$w_i = G_{\mathrm{map}}(z_i)$$
 
-3. **Landmark Detection:** extract 68 facial keypoints with `face_alignment`.
+3. **Synthesize** image  
 
-4. **Eye-Mask Area** $y^A_i$:  
-   $$
-     M = \text{polygon}(p_{36\ldots41},\ p_{42\ldots47}),\quad
-     y^A_i = \frac{1}{H\,W}\sum_{h=1}^{H}\sum_{w=1}^{W} M_{h,w}
-   $$
+$$x_i = G_{\mathrm{synth}}(w_i)$$
 
-5. **Eye Aspect Ratio (EAR)** $y^E_i$: for each eye with landmarks $p_1,\dots,p_6$,
-   $$
-     y^E_i = \frac{\|p_2 - p_6\| + \|p_3 - p_5\|}{2\,\|p_1 - p_4\|}
-   $$
+4. **Landmark Detection:** extract 68 facial keypoints with `face_alignment`.
+
+5. **Eye-Mask Area** $y^A_i$:
+   
+$$M = \text{polygon}(p_{36\ldots41},\ p_{42\ldots47}),\quad$$
+
+$$y^A_i = \frac{1}{H\,W}\sum_{h=1}^{H}\sum_{w=1}^{W} M_{h,w}$$
+
+6. **Eye Aspect Ratio (EAR)** $y^E_i$:
+   - for each eye with landmarks $p_1,\dots,p_6$,
+
+$$y^E_i = \frac{\|p_2 - p_6\| + \|p_3 - p_5\|}{2\,\|p_1 - p_4\|}$$
 
 
 ### 2.2 Boundary Training
 
 - **Ridge Regression** on $\{w_i, y^E_i\}$ with 5-fold CV over $\alpha \in \{0.01, 0.1, 1, 10\}$.  
 - Extract coefficient vector $\beta \in \mathbb{R}^D$, normalize:
-  $$
-    \delta_{\mathrm{full}}
-    = \frac{\beta}{\|\beta\|}.
-  $$
+  
+  $$\delta_{\mathrm{full}} = \frac{\beta}{\|\beta\|}.$$
 
 ### 2.3 Style Masking
 
-- Zero out style inputs beyond the first $K$ coarse layers ($K=6$):
-  $$
-    \delta_{\mathrm{geo}}[k, :, :] =
-    \begin{cases}
-      \delta_{\mathrm{full}}[k, :, :] & k < K,\\
-      0                               & k \ge K,
-    \end{cases}
-    \quad
-    \delta_{\mathrm{geo}} \leftarrow \frac{\delta_{\mathrm{geo}}}{\|\delta_{\mathrm{geo}}\|}.
-  $$
+- Zero out style inputs beyond the first \(K\) coarse layers
+
+$$
+\delta_{\mathrm{geo}}[k,:,:] =
+\begin{cases}
+\delta_{\mathrm{full}}[k,:,:], & k < K,\\
+0,                            & k \ge K,
+\end{cases}
+\quad
+\delta_{\mathrm{geo}} \leftarrow \frac{\delta_{\mathrm{geo}}}{\|\delta_{\mathrm{geo}}\|}.
+$$
 
 ### 2.4 Latent Manipulation
 
-- For a new code $w_0$, generate edited images:
-  $$
-    x(\alpha) = G_{\mathrm{synth}}\bigl(w_0 + \alpha\,\delta\bigr),
-  $$
-  using $\delta = \delta_{\mathrm{full}}$ or $\delta_{\mathrm{geo}}$.
+- For a new code \(w_0\), generate edited images:
+
+$$x(\alpha) = G_{\mathrm{synth}}\bigl(w_0 + \alpha\,\delta\bigr),$$
+
+$$using \(\delta = \delta_{\mathrm{full}}\) or \(\delta_{\mathrm{geo}}\).$$
 
 ---
 
