@@ -24,20 +24,21 @@
 
 $$w_i = G_{\mathrm{map}}(z_i)$$
 
-3. **Synthesize** image  
+2. **Synthesize** image  
 
 $$x_i = G_{\mathrm{synth}}(w_i)$$
 
-4. **Landmark Detection:** extract 68 facial keypoints with `face_alignment`.
+3. **Landmark Detection:** 
+- extract 68 facial keypoints with `face_alignment`.
 
-5. **Eye-Mask Area** $y^A_i$:
+4. **Eye-Mask Area** $y^A_i$:
    
 $$M = \text{polygon}(p_{36\ldots41},\ p_{42\ldots47}),\quad$$
 
 $$y^A_i = \frac{1}{H\,W}\sum_{h=1}^{H}\sum_{w=1}^{W} M_{h,w}$$
 
-6. **Eye Aspect Ratio (EAR)** $y^E_i$:
-   - for each eye with landmarks $p_1,\dots,p_6$,
+5. **Eye Aspect Ratio (EAR)** $y^E_i$:
+- for each eye with landmarks $p_1,\dots,p_6$,
 
 $$y^E_i = \frac{\|p_2 - p_6\| + \|p_3 - p_5\|}{2\,\|p_1 - p_4\|}$$
 
@@ -47,7 +48,7 @@ $$y^E_i = \frac{\|p_2 - p_6\| + \|p_3 - p_5\|}{2\,\|p_1 - p_4\|}$$
 - **Ridge Regression** on $\{w_i, y^E_i\}$ with 5-fold CV over $\alpha \in \{0.01, 0.1, 1, 10\}$.  
 - Extract coefficient vector $\beta \in \mathbb{R}^D$, normalize:
   
-  $$\delta_{\mathrm{full}} = \frac{\beta}{\|\beta\|}.$$
+$$\delta_{\mathrm{full}} = \frac{\beta}{\|\beta\|}.$$
 
 ### 2.3 Style Masking
 
